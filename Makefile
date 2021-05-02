@@ -14,7 +14,7 @@ entgen:
 	go generate ./ent
 
 test:
-	go test -test.v -cover ./...
+	go test -test.v -cover ./tests/...
 
 describeSchema:
 	go run entgo.io/ent/cmd/ent describe ./ent/schema
