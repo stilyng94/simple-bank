@@ -22,3 +22,11 @@ func TestCreateAccount(t *testing.T) {
 	require.NotEmpty(t, account)
 
 }
+
+func TestGetAccounts(t *testing.T) {
+	ctx := context.Background()
+	account, err := testDb.Account.Query().All(ctx)
+	require.NoError(t, err)
+	require.NotEmpty(t, account)
+
+}

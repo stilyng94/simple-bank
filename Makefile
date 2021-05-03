@@ -19,5 +19,7 @@ test:
 describeSchema:
 	go run entgo.io/ent/cmd/ent describe ./ent/schema
 
+server:
+	go run main.go
 
-.PHONY: test postgres createDb dropdb createEntity entgen describeSchema
+.PHONY: test postgres createDb dropdb createEntity entgen describeSchema server
