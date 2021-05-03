@@ -10,7 +10,7 @@ import (
 )
 
 func SetupTestDb(t *testing.T) *ent.Client {
-	drv := operation.SetupDbDriver("postgresql://root:secret@127.0.0.1:5432/test_bank")
+	drv := operation.SetupDbDriver(config.DB_SOURCE)
 
 	opts := []enttest.Option{
 		enttest.WithOptions(ent.Log(log.Println), ent.Driver(drv)),

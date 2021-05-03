@@ -1,18 +1,24 @@
 package main
 
 import (
+	"log"
 	"simple-bank/api"
 	"simple-bank/operation"
+	"simple-bank/util"
 )
 
 func main() {
-	dbClient := operation.DbConn("postgresql://root:secret@127.0.0.1:5432/simple_bank")
+	config, err := util.LoadConfig(".", ".dev")
+	if err != nil {
+		log.Fatalln("Env loading error ", err)
+	}
+	dbClient := operation.DbConn(config.DB_SOURCE)
 
 	operation.MigrateDb(dbClient)
 
 	server := api.NewServer(dbClient)
 
-	err := server.Start("0.0.0.0:5000")
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		panic(err)
 	}

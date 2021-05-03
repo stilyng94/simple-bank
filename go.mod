@@ -12,6 +12,7 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.7
+	github.com/spf13/viper v1.7.1 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.5 // indirect
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect

@@ -25,8 +25,8 @@ func TestCreateAccount(t *testing.T) {
 
 func TestGetAccounts(t *testing.T) {
 	ctx := context.Background()
-	account, err := testDb.Account.Query().All(ctx)
+	accounts, err := testDb.Account.Query().All(ctx)
 	require.NoError(t, err)
-	require.NotEmpty(t, account)
+	require.GreaterOrEqual(t, len(accounts), 5)
 
 }
