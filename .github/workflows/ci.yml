@@ -42,4 +42,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test
+        env:
+          DB_DRIVER: postgres
+          DB_SOURCE: postgresql://root:secret@127.0.0.1:5432/test_bank
+          SERVER_ADDRESS: 0.0.0.0:8000
         run: make test

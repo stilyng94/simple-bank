@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createFakeTransfer(ctx context.Context, iTransferRepo repository.ITransferRepo, args repository.CreateTransferArgs) (repository.CreateTransferResult, error) {
+func createFakeTransfer(ctx context.Context, iTransferRepo repository.ITransferRepo, args repository.CreateTransferDto) (repository.CreateTransferResultDto, error) {
 	result, err := iTransferRepo.CreateTransfer(ctx, args)
 	return result, err
 
@@ -27,14 +27,14 @@ func TestCreateTransfer(t *testing.T) {
 	amount := int32(10)
 
 	errChan := make(chan error)
-	resultChan := make(chan repository.CreateTransferResult)
+	resultChan := make(chan repository.CreateTransferResultDto)
 
 	for i := 0; i < n; i++ {
 		go func() {
 			ctx2 := context.Background()
 
-			transferRepo := repository.NewTransferRepository(testDb)
-			result, err := createFakeTransfer(ctx2, transferRepo, repository.CreateTransferArgs{FromAccountID: account1.ID.String(), ToAccountID: account2.ID.String(), Amount: amount})
+			transferRepo := repository.NewTransferRepo(testDb)
+			result, err := createFakeTransfer(ctx2, transferRepo, repository.CreateTransferDto{FromAccountID: account1.ID.String(), ToAccountID: account2.ID.String(), Amount: amount})
 			errChan <- err
 			resultChan <- result
 		}()
@@ -147,8 +147,8 @@ func TestCreateTransferDeadlock(t *testing.T) {
 
 		go func() {
 			ctx2 := context.Background()
-			transferRepo := repository.NewTransferRepository(testDb)
-			_, err := createFakeTransfer(ctx2, transferRepo, repository.CreateTransferArgs{FromAccountID: fromAccountID, ToAccountID: toAccountID, Amount: amount})
+			transferRepo := repository.NewTransferRepo(testDb)
+			_, err := createFakeTransfer(ctx2, transferRepo, repository.CreateTransferDto{FromAccountID: fromAccountID, ToAccountID: toAccountID, Amount: amount})
 
 			errChan <- err
 		}()

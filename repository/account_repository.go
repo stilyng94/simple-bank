@@ -32,7 +32,7 @@ type AccountRepo struct {
 	dbClient *ent.Client
 }
 
-func NewAccountRepo(dbClient *ent.Client) *AccountRepo {
+func NewAccountRepo(dbClient *ent.Client) IAccountRepo {
 	return &AccountRepo{dbClient: dbClient}
 }
 

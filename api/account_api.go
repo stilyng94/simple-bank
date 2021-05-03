@@ -8,6 +8,7 @@ import (
 )
 
 func (server *Server) createAccount(ctx *gin.Context) {
+
 	var kwargs repository.CreateAccountDto
 	if err := ctx.ShouldBindJSON(&kwargs); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -33,7 +34,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 	account, err := server.iAccountRepo.GetAccount(ctx, kwargs)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
 		return
 	}
 	ctx.JSON(http.StatusOK, account)

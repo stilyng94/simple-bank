@@ -15,6 +15,7 @@ func SetupDbDriver(databaseUrl string) *entsql.Driver {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Create an ent.Driver from `db`.
 	drv := entsql.OpenDB(dialect.Postgres, db)
 
 	return drv

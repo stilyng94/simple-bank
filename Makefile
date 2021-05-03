@@ -22,4 +22,7 @@ describeSchema:
 server:
 	go run main.go
 
-.PHONY: test postgres createDb dropdb createEntity entgen describeSchema server
+mock:
+	mockgen -package mockdb  -destination tests/mock/store.go  simple-bank/repository IAccountRepo,ITransferRepo	
+
+.PHONY: test postgres createDb dropdb createEntity entgen describeSchema server mock

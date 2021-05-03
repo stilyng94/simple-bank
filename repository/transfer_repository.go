@@ -7,13 +7,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type CreateTransferArgs struct {
+type CreateTransferDto struct {
 	FromAccountID string `json:"from_account_id"`
 	ToAccountID   string `json:"to_account_id"`
 	Amount        int32  `json:"amount"`
 }
 
-type CreateTransferResult struct {
+type CreateTransferResultDto struct {
 	Transfer    *ent.Transfer `json:"transfer"`
 	FromAccount *ent.Account  `json:"to_account_id"`
 	ToAccount   *ent.Account  `json:"amount"`
@@ -22,18 +22,18 @@ type CreateTransferResult struct {
 }
 
 type ITransferRepo interface {
-	CreateTransfer(ctx context.Context, args CreateTransferArgs) (createTransferResult CreateTransferResult, err error)
+	CreateTransfer(ctx context.Context, args CreateTransferDto) (createTransferResult CreateTransferResultDto, err error)
 }
 
 type TransferRepo struct {
 	dbClient *ent.Client
 }
 
-func NewTransferRepository(dbClient *ent.Client) *TransferRepo {
+func NewTransferRepo(dbClient *ent.Client) ITransferRepo {
 	return &TransferRepo{dbClient: dbClient}
 }
 
-func (transferRepo *TransferRepo) CreateTransfer(ctx context.Context, args CreateTransferArgs) (createTransferResult CreateTransferResult, err error) {
+func (transferRepo *TransferRepo) CreateTransfer(ctx context.Context, args CreateTransferDto) (createTransferResult CreateTransferResultDto, err error) {
 
 	txClient, err := transferRepo.dbClient.Tx(ctx)
 	if err != nil {

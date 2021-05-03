@@ -27,6 +27,6 @@ func TestGetAccounts(t *testing.T) {
 	ctx := context.Background()
 	accounts, err := testDb.Account.Query().All(ctx)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, len(accounts), 5)
+	require.GreaterOrEqual(t, len(accounts), 1)
 
 }
