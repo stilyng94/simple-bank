@@ -51,8 +51,20 @@ func (tc *TransferCreate) SetNillableUpdateTime(t *time.Time) *TransferCreate {
 }
 
 // SetAmount sets the "amount" field.
-func (tc *TransferCreate) SetAmount(i int32) *TransferCreate {
-	tc.mutation.SetAmount(i)
+func (tc *TransferCreate) SetAmount(f float64) *TransferCreate {
+	tc.mutation.SetAmount(f)
+	return tc
+}
+
+// SetFromAccountId sets the "fromAccountId" field.
+func (tc *TransferCreate) SetFromAccountId(u uuid.UUID) *TransferCreate {
+	tc.mutation.SetFromAccountId(u)
+	return tc
+}
+
+// SetToAccountId sets the "toAccountId" field.
+func (tc *TransferCreate) SetToAccountId(u uuid.UUID) *TransferCreate {
+	tc.mutation.SetToAccountId(u)
 	return tc
 }
 
@@ -161,6 +173,12 @@ func (tc *TransferCreate) check() error {
 	if _, ok := tc.mutation.Amount(); !ok {
 		return &ValidationError{Name: "amount", err: errors.New("ent: missing required field \"amount\"")}
 	}
+	if _, ok := tc.mutation.FromAccountId(); !ok {
+		return &ValidationError{Name: "fromAccountId", err: errors.New("ent: missing required field \"fromAccountId\"")}
+	}
+	if _, ok := tc.mutation.ToAccountId(); !ok {
+		return &ValidationError{Name: "toAccountId", err: errors.New("ent: missing required field \"toAccountId\"")}
+	}
 	if _, ok := tc.mutation.FromAccountID(); !ok {
 		return &ValidationError{Name: "fromAccount", err: errors.New("ent: missing required edge \"fromAccount\"")}
 	}
@@ -214,7 +232,7 @@ func (tc *TransferCreate) createSpec() (*Transfer, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.Amount(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: transfer.FieldAmount,
 		})
@@ -237,7 +255,7 @@ func (tc *TransferCreate) createSpec() (*Transfer, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.account_outbound = &nodes[0]
+		_node.FromAccountId = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := tc.mutation.ToAccountIDs(); len(nodes) > 0 {
@@ -257,7 +275,7 @@ func (tc *TransferCreate) createSpec() (*Transfer, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.account_inbound = &nodes[0]
+		_node.ToAccountId = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

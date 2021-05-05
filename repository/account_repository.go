@@ -9,11 +9,11 @@ import (
 
 type CreateAccountDto struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency"  binding:"required,oneof=USD EUR POUND GHS"`
+	Currency string `json:"currency"  binding:"required,currency"`
 }
 
 type GetAccountDto struct {
-	ID string `uri:"id" binding:"required,uuid"`
+	ID string `uri:"id" binding:"required"`
 }
 
 type GetAccountsDto struct {
@@ -37,7 +37,7 @@ func NewAccountRepo(dbClient *ent.Client) IAccountRepo {
 }
 
 func (accountRepo *AccountRepo) CreateAccount(ctx context.Context, args CreateAccountDto) (account *ent.Account, err error) {
-	account, err = accountRepo.dbClient.Account.Create().SetOwner(args.Owner).SetCurrency(args.Currency).Save(ctx)
+	account, err = accountRepo.dbClient.Account.Create().SetOwner((args.Owner)).SetCurrency(args.Currency).Save(ctx)
 	return
 }
 

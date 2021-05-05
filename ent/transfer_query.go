@@ -29,7 +29,6 @@ type TransferQuery struct {
 	// eager-loading edges.
 	withFromAccount *AccountQuery
 	withToAccount   *AccountQuery
-	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -385,19 +384,12 @@ func (tq *TransferQuery) prepareQuery(ctx context.Context) error {
 func (tq *TransferQuery) sqlAll(ctx context.Context) ([]*Transfer, error) {
 	var (
 		nodes       = []*Transfer{}
-		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
 		loadedTypes = [2]bool{
 			tq.withFromAccount != nil,
 			tq.withToAccount != nil,
 		}
 	)
-	if tq.withFromAccount != nil || tq.withToAccount != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, transfer.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Transfer{config: tq.config}
 		nodes = append(nodes, node)
@@ -422,10 +414,7 @@ func (tq *TransferQuery) sqlAll(ctx context.Context) ([]*Transfer, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Transfer)
 		for i := range nodes {
-			if nodes[i].account_outbound == nil {
-				continue
-			}
-			fk := *nodes[i].account_outbound
+			fk := nodes[i].FromAccountId
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -439,7 +428,7 @@ func (tq *TransferQuery) sqlAll(ctx context.Context) ([]*Transfer, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "account_outbound" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "fromAccountId" returned %v`, n.ID)
 			}
 			for i := range nodes {
 				nodes[i].Edges.FromAccount = n
@@ -451,10 +440,7 @@ func (tq *TransferQuery) sqlAll(ctx context.Context) ([]*Transfer, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Transfer)
 		for i := range nodes {
-			if nodes[i].account_inbound == nil {
-				continue
-			}
-			fk := *nodes[i].account_inbound
+			fk := nodes[i].ToAccountId
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -468,7 +454,7 @@ func (tq *TransferQuery) sqlAll(ctx context.Context) ([]*Transfer, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "account_inbound" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "toAccountId" returned %v`, n.ID)
 			}
 			for i := range nodes {
 				nodes[i].Edges.ToAccount = n

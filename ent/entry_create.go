@@ -51,8 +51,14 @@ func (ec *EntryCreate) SetNillableUpdateTime(t *time.Time) *EntryCreate {
 }
 
 // SetAmount sets the "amount" field.
-func (ec *EntryCreate) SetAmount(i int32) *EntryCreate {
-	ec.mutation.SetAmount(i)
+func (ec *EntryCreate) SetAmount(f float64) *EntryCreate {
+	ec.mutation.SetAmount(f)
+	return ec
+}
+
+// SetAccountId sets the "accountId" field.
+func (ec *EntryCreate) SetAccountId(u uuid.UUID) *EntryCreate {
+	ec.mutation.SetAccountId(u)
 	return ec
 }
 
@@ -150,6 +156,9 @@ func (ec *EntryCreate) check() error {
 	if _, ok := ec.mutation.Amount(); !ok {
 		return &ValidationError{Name: "amount", err: errors.New("ent: missing required field \"amount\"")}
 	}
+	if _, ok := ec.mutation.AccountId(); !ok {
+		return &ValidationError{Name: "accountId", err: errors.New("ent: missing required field \"accountId\"")}
+	}
 	if _, ok := ec.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account", err: errors.New("ent: missing required edge \"account\"")}
 	}
@@ -200,7 +209,7 @@ func (ec *EntryCreate) createSpec() (*Entry, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ec.mutation.Amount(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: entry.FieldAmount,
 		})
@@ -223,7 +232,7 @@ func (ec *EntryCreate) createSpec() (*Entry, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.account_entries = &nodes[0]
+		_node.AccountId = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

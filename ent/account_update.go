@@ -4,11 +4,13 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"simple-bank/ent/account"
 	"simple-bank/ent/entry"
 	"simple-bank/ent/predicate"
 	"simple-bank/ent/transfer"
+	"simple-bank/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -36,29 +38,23 @@ func (au *AccountUpdate) SetOwner(s string) *AccountUpdate {
 }
 
 // SetBalance sets the "balance" field.
-func (au *AccountUpdate) SetBalance(i int32) *AccountUpdate {
+func (au *AccountUpdate) SetBalance(f float64) *AccountUpdate {
 	au.mutation.ResetBalance()
-	au.mutation.SetBalance(i)
+	au.mutation.SetBalance(f)
 	return au
 }
 
 // SetNillableBalance sets the "balance" field if the given value is not nil.
-func (au *AccountUpdate) SetNillableBalance(i *int32) *AccountUpdate {
-	if i != nil {
-		au.SetBalance(*i)
+func (au *AccountUpdate) SetNillableBalance(f *float64) *AccountUpdate {
+	if f != nil {
+		au.SetBalance(*f)
 	}
 	return au
 }
 
-// AddBalance adds i to the "balance" field.
-func (au *AccountUpdate) AddBalance(i int32) *AccountUpdate {
-	au.mutation.AddBalance(i)
-	return au
-}
-
-// SetCurrency sets the "currency" field.
-func (au *AccountUpdate) SetCurrency(s string) *AccountUpdate {
-	au.mutation.SetCurrency(s)
+// AddBalance adds f to the "balance" field.
+func (au *AccountUpdate) AddBalance(f float64) *AccountUpdate {
+	au.mutation.AddBalance(f)
 	return au
 }
 
@@ -77,14 +73,14 @@ func (au *AccountUpdate) AddEntries(e ...*Entry) *AccountUpdate {
 	return au.AddEntryIDs(ids...)
 }
 
-// AddOutboundIDs adds the "outbound" edge to the Transfer entity by IDs.
+// AddOutboundIDs adds the "outbounds" edge to the Transfer entity by IDs.
 func (au *AccountUpdate) AddOutboundIDs(ids ...uuid.UUID) *AccountUpdate {
 	au.mutation.AddOutboundIDs(ids...)
 	return au
 }
 
-// AddOutbound adds the "outbound" edges to the Transfer entity.
-func (au *AccountUpdate) AddOutbound(t ...*Transfer) *AccountUpdate {
+// AddOutbounds adds the "outbounds" edges to the Transfer entity.
+func (au *AccountUpdate) AddOutbounds(t ...*Transfer) *AccountUpdate {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -92,19 +88,30 @@ func (au *AccountUpdate) AddOutbound(t ...*Transfer) *AccountUpdate {
 	return au.AddOutboundIDs(ids...)
 }
 
-// AddInboundIDs adds the "inbound" edge to the Transfer entity by IDs.
+// AddInboundIDs adds the "inbounds" edge to the Transfer entity by IDs.
 func (au *AccountUpdate) AddInboundIDs(ids ...uuid.UUID) *AccountUpdate {
 	au.mutation.AddInboundIDs(ids...)
 	return au
 }
 
-// AddInbound adds the "inbound" edges to the Transfer entity.
-func (au *AccountUpdate) AddInbound(t ...*Transfer) *AccountUpdate {
+// AddInbounds adds the "inbounds" edges to the Transfer entity.
+func (au *AccountUpdate) AddInbounds(t ...*Transfer) *AccountUpdate {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return au.AddInboundIDs(ids...)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (au *AccountUpdate) SetUserID(id string) *AccountUpdate {
+	au.mutation.SetUserID(id)
+	return au
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (au *AccountUpdate) SetUser(u *User) *AccountUpdate {
+	return au.SetUserID(u.ID)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -133,20 +140,20 @@ func (au *AccountUpdate) RemoveEntries(e ...*Entry) *AccountUpdate {
 	return au.RemoveEntryIDs(ids...)
 }
 
-// ClearOutbound clears all "outbound" edges to the Transfer entity.
-func (au *AccountUpdate) ClearOutbound() *AccountUpdate {
-	au.mutation.ClearOutbound()
+// ClearOutbounds clears all "outbounds" edges to the Transfer entity.
+func (au *AccountUpdate) ClearOutbounds() *AccountUpdate {
+	au.mutation.ClearOutbounds()
 	return au
 }
 
-// RemoveOutboundIDs removes the "outbound" edge to Transfer entities by IDs.
+// RemoveOutboundIDs removes the "outbounds" edge to Transfer entities by IDs.
 func (au *AccountUpdate) RemoveOutboundIDs(ids ...uuid.UUID) *AccountUpdate {
 	au.mutation.RemoveOutboundIDs(ids...)
 	return au
 }
 
-// RemoveOutbound removes "outbound" edges to Transfer entities.
-func (au *AccountUpdate) RemoveOutbound(t ...*Transfer) *AccountUpdate {
+// RemoveOutbounds removes "outbounds" edges to Transfer entities.
+func (au *AccountUpdate) RemoveOutbounds(t ...*Transfer) *AccountUpdate {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -154,25 +161,31 @@ func (au *AccountUpdate) RemoveOutbound(t ...*Transfer) *AccountUpdate {
 	return au.RemoveOutboundIDs(ids...)
 }
 
-// ClearInbound clears all "inbound" edges to the Transfer entity.
-func (au *AccountUpdate) ClearInbound() *AccountUpdate {
-	au.mutation.ClearInbound()
+// ClearInbounds clears all "inbounds" edges to the Transfer entity.
+func (au *AccountUpdate) ClearInbounds() *AccountUpdate {
+	au.mutation.ClearInbounds()
 	return au
 }
 
-// RemoveInboundIDs removes the "inbound" edge to Transfer entities by IDs.
+// RemoveInboundIDs removes the "inbounds" edge to Transfer entities by IDs.
 func (au *AccountUpdate) RemoveInboundIDs(ids ...uuid.UUID) *AccountUpdate {
 	au.mutation.RemoveInboundIDs(ids...)
 	return au
 }
 
-// RemoveInbound removes "inbound" edges to Transfer entities.
-func (au *AccountUpdate) RemoveInbound(t ...*Transfer) *AccountUpdate {
+// RemoveInbounds removes "inbounds" edges to Transfer entities.
+func (au *AccountUpdate) RemoveInbounds(t ...*Transfer) *AccountUpdate {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return au.RemoveInboundIDs(ids...)
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (au *AccountUpdate) ClearUser() *AccountUpdate {
+	au.mutation.ClearUser()
+	return au
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -248,10 +261,8 @@ func (au *AccountUpdate) check() error {
 			return &ValidationError{Name: "owner", err: fmt.Errorf("ent: validator failed for field \"owner\": %w", err)}
 		}
 	}
-	if v, ok := au.mutation.Currency(); ok {
-		if err := account.CurrencyValidator(v); err != nil {
-			return &ValidationError{Name: "currency", err: fmt.Errorf("ent: validator failed for field \"currency\": %w", err)}
-		}
+	if _, ok := au.mutation.UserID(); au.mutation.UserCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"user\"")
 	}
 	return nil
 }
@@ -281,32 +292,18 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: account.FieldUpdateTime,
 		})
 	}
-	if value, ok := au.mutation.Owner(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: account.FieldOwner,
-		})
-	}
 	if value, ok := au.mutation.Balance(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: account.FieldBalance,
 		})
 	}
 	if value, ok := au.mutation.AddedBalance(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: account.FieldBalance,
-		})
-	}
-	if value, ok := au.mutation.Currency(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: account.FieldCurrency,
 		})
 	}
 	if au.mutation.EntriesCleared() {
@@ -363,12 +360,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if au.mutation.OutboundCleared() {
+	if au.mutation.OutboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -379,12 +376,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedOutboundIDs(); len(nodes) > 0 && !au.mutation.OutboundCleared() {
+	if nodes := au.mutation.RemovedOutboundsIDs(); len(nodes) > 0 && !au.mutation.OutboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -398,12 +395,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.OutboundIDs(); len(nodes) > 0 {
+	if nodes := au.mutation.OutboundsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -417,12 +414,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if au.mutation.InboundCleared() {
+	if au.mutation.InboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -433,12 +430,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedInboundIDs(); len(nodes) > 0 && !au.mutation.InboundCleared() {
+	if nodes := au.mutation.RemovedInboundsIDs(); len(nodes) > 0 && !au.mutation.InboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -452,17 +449,52 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.InboundIDs(); len(nodes) > 0 {
+	if nodes := au.mutation.InboundsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: transfer.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   account.UserTable,
+			Columns: []string{account.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   account.UserTable,
+			Columns: []string{account.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: user.FieldID,
 				},
 			},
 		}
@@ -497,29 +529,23 @@ func (auo *AccountUpdateOne) SetOwner(s string) *AccountUpdateOne {
 }
 
 // SetBalance sets the "balance" field.
-func (auo *AccountUpdateOne) SetBalance(i int32) *AccountUpdateOne {
+func (auo *AccountUpdateOne) SetBalance(f float64) *AccountUpdateOne {
 	auo.mutation.ResetBalance()
-	auo.mutation.SetBalance(i)
+	auo.mutation.SetBalance(f)
 	return auo
 }
 
 // SetNillableBalance sets the "balance" field if the given value is not nil.
-func (auo *AccountUpdateOne) SetNillableBalance(i *int32) *AccountUpdateOne {
-	if i != nil {
-		auo.SetBalance(*i)
+func (auo *AccountUpdateOne) SetNillableBalance(f *float64) *AccountUpdateOne {
+	if f != nil {
+		auo.SetBalance(*f)
 	}
 	return auo
 }
 
-// AddBalance adds i to the "balance" field.
-func (auo *AccountUpdateOne) AddBalance(i int32) *AccountUpdateOne {
-	auo.mutation.AddBalance(i)
-	return auo
-}
-
-// SetCurrency sets the "currency" field.
-func (auo *AccountUpdateOne) SetCurrency(s string) *AccountUpdateOne {
-	auo.mutation.SetCurrency(s)
+// AddBalance adds f to the "balance" field.
+func (auo *AccountUpdateOne) AddBalance(f float64) *AccountUpdateOne {
+	auo.mutation.AddBalance(f)
 	return auo
 }
 
@@ -538,14 +564,14 @@ func (auo *AccountUpdateOne) AddEntries(e ...*Entry) *AccountUpdateOne {
 	return auo.AddEntryIDs(ids...)
 }
 
-// AddOutboundIDs adds the "outbound" edge to the Transfer entity by IDs.
+// AddOutboundIDs adds the "outbounds" edge to the Transfer entity by IDs.
 func (auo *AccountUpdateOne) AddOutboundIDs(ids ...uuid.UUID) *AccountUpdateOne {
 	auo.mutation.AddOutboundIDs(ids...)
 	return auo
 }
 
-// AddOutbound adds the "outbound" edges to the Transfer entity.
-func (auo *AccountUpdateOne) AddOutbound(t ...*Transfer) *AccountUpdateOne {
+// AddOutbounds adds the "outbounds" edges to the Transfer entity.
+func (auo *AccountUpdateOne) AddOutbounds(t ...*Transfer) *AccountUpdateOne {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -553,19 +579,30 @@ func (auo *AccountUpdateOne) AddOutbound(t ...*Transfer) *AccountUpdateOne {
 	return auo.AddOutboundIDs(ids...)
 }
 
-// AddInboundIDs adds the "inbound" edge to the Transfer entity by IDs.
+// AddInboundIDs adds the "inbounds" edge to the Transfer entity by IDs.
 func (auo *AccountUpdateOne) AddInboundIDs(ids ...uuid.UUID) *AccountUpdateOne {
 	auo.mutation.AddInboundIDs(ids...)
 	return auo
 }
 
-// AddInbound adds the "inbound" edges to the Transfer entity.
-func (auo *AccountUpdateOne) AddInbound(t ...*Transfer) *AccountUpdateOne {
+// AddInbounds adds the "inbounds" edges to the Transfer entity.
+func (auo *AccountUpdateOne) AddInbounds(t ...*Transfer) *AccountUpdateOne {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return auo.AddInboundIDs(ids...)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (auo *AccountUpdateOne) SetUserID(id string) *AccountUpdateOne {
+	auo.mutation.SetUserID(id)
+	return auo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (auo *AccountUpdateOne) SetUser(u *User) *AccountUpdateOne {
+	return auo.SetUserID(u.ID)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -594,20 +631,20 @@ func (auo *AccountUpdateOne) RemoveEntries(e ...*Entry) *AccountUpdateOne {
 	return auo.RemoveEntryIDs(ids...)
 }
 
-// ClearOutbound clears all "outbound" edges to the Transfer entity.
-func (auo *AccountUpdateOne) ClearOutbound() *AccountUpdateOne {
-	auo.mutation.ClearOutbound()
+// ClearOutbounds clears all "outbounds" edges to the Transfer entity.
+func (auo *AccountUpdateOne) ClearOutbounds() *AccountUpdateOne {
+	auo.mutation.ClearOutbounds()
 	return auo
 }
 
-// RemoveOutboundIDs removes the "outbound" edge to Transfer entities by IDs.
+// RemoveOutboundIDs removes the "outbounds" edge to Transfer entities by IDs.
 func (auo *AccountUpdateOne) RemoveOutboundIDs(ids ...uuid.UUID) *AccountUpdateOne {
 	auo.mutation.RemoveOutboundIDs(ids...)
 	return auo
 }
 
-// RemoveOutbound removes "outbound" edges to Transfer entities.
-func (auo *AccountUpdateOne) RemoveOutbound(t ...*Transfer) *AccountUpdateOne {
+// RemoveOutbounds removes "outbounds" edges to Transfer entities.
+func (auo *AccountUpdateOne) RemoveOutbounds(t ...*Transfer) *AccountUpdateOne {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -615,25 +652,31 @@ func (auo *AccountUpdateOne) RemoveOutbound(t ...*Transfer) *AccountUpdateOne {
 	return auo.RemoveOutboundIDs(ids...)
 }
 
-// ClearInbound clears all "inbound" edges to the Transfer entity.
-func (auo *AccountUpdateOne) ClearInbound() *AccountUpdateOne {
-	auo.mutation.ClearInbound()
+// ClearInbounds clears all "inbounds" edges to the Transfer entity.
+func (auo *AccountUpdateOne) ClearInbounds() *AccountUpdateOne {
+	auo.mutation.ClearInbounds()
 	return auo
 }
 
-// RemoveInboundIDs removes the "inbound" edge to Transfer entities by IDs.
+// RemoveInboundIDs removes the "inbounds" edge to Transfer entities by IDs.
 func (auo *AccountUpdateOne) RemoveInboundIDs(ids ...uuid.UUID) *AccountUpdateOne {
 	auo.mutation.RemoveInboundIDs(ids...)
 	return auo
 }
 
-// RemoveInbound removes "inbound" edges to Transfer entities.
-func (auo *AccountUpdateOne) RemoveInbound(t ...*Transfer) *AccountUpdateOne {
+// RemoveInbounds removes "inbounds" edges to Transfer entities.
+func (auo *AccountUpdateOne) RemoveInbounds(t ...*Transfer) *AccountUpdateOne {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return auo.RemoveInboundIDs(ids...)
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (auo *AccountUpdateOne) ClearUser() *AccountUpdateOne {
+	auo.mutation.ClearUser()
+	return auo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -716,10 +759,8 @@ func (auo *AccountUpdateOne) check() error {
 			return &ValidationError{Name: "owner", err: fmt.Errorf("ent: validator failed for field \"owner\": %w", err)}
 		}
 	}
-	if v, ok := auo.mutation.Currency(); ok {
-		if err := account.CurrencyValidator(v); err != nil {
-			return &ValidationError{Name: "currency", err: fmt.Errorf("ent: validator failed for field \"currency\": %w", err)}
-		}
+	if _, ok := auo.mutation.UserID(); auo.mutation.UserCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"user\"")
 	}
 	return nil
 }
@@ -766,32 +807,18 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 			Column: account.FieldUpdateTime,
 		})
 	}
-	if value, ok := auo.mutation.Owner(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: account.FieldOwner,
-		})
-	}
 	if value, ok := auo.mutation.Balance(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: account.FieldBalance,
 		})
 	}
 	if value, ok := auo.mutation.AddedBalance(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: account.FieldBalance,
-		})
-	}
-	if value, ok := auo.mutation.Currency(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: account.FieldCurrency,
 		})
 	}
 	if auo.mutation.EntriesCleared() {
@@ -848,12 +875,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if auo.mutation.OutboundCleared() {
+	if auo.mutation.OutboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -864,12 +891,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedOutboundIDs(); len(nodes) > 0 && !auo.mutation.OutboundCleared() {
+	if nodes := auo.mutation.RemovedOutboundsIDs(); len(nodes) > 0 && !auo.mutation.OutboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -883,12 +910,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.OutboundIDs(); len(nodes) > 0 {
+	if nodes := auo.mutation.OutboundsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -902,12 +929,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if auo.mutation.InboundCleared() {
+	if auo.mutation.InboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -918,12 +945,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedInboundIDs(); len(nodes) > 0 && !auo.mutation.InboundCleared() {
+	if nodes := auo.mutation.RemovedInboundsIDs(); len(nodes) > 0 && !auo.mutation.InboundsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -937,17 +964,52 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.InboundIDs(); len(nodes) > 0 {
+	if nodes := auo.mutation.InboundsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: transfer.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   account.UserTable,
+			Columns: []string{account.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   account.UserTable,
+			Columns: []string{account.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: user.FieldID,
 				},
 			},
 		}

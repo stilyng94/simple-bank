@@ -116,7 +116,7 @@ func Owner(v string) predicate.Account {
 }
 
 // Balance applies equality check predicate on the "balance" field. It's identical to BalanceEQ.
-func Balance(v int32) predicate.Account {
+func Balance(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBalance), v))
 	})
@@ -393,21 +393,21 @@ func OwnerContainsFold(v string) predicate.Account {
 }
 
 // BalanceEQ applies the EQ predicate on the "balance" field.
-func BalanceEQ(v int32) predicate.Account {
+func BalanceEQ(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceNEQ applies the NEQ predicate on the "balance" field.
-func BalanceNEQ(v int32) predicate.Account {
+func BalanceNEQ(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceIn applies the In predicate on the "balance" field.
-func BalanceIn(vs ...int32) predicate.Account {
+func BalanceIn(vs ...float64) predicate.Account {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -424,7 +424,7 @@ func BalanceIn(vs ...int32) predicate.Account {
 }
 
 // BalanceNotIn applies the NotIn predicate on the "balance" field.
-func BalanceNotIn(vs ...int32) predicate.Account {
+func BalanceNotIn(vs ...float64) predicate.Account {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -441,28 +441,28 @@ func BalanceNotIn(vs ...int32) predicate.Account {
 }
 
 // BalanceGT applies the GT predicate on the "balance" field.
-func BalanceGT(v int32) predicate.Account {
+func BalanceGT(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceGTE applies the GTE predicate on the "balance" field.
-func BalanceGTE(v int32) predicate.Account {
+func BalanceGTE(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceLT applies the LT predicate on the "balance" field.
-func BalanceLT(v int32) predicate.Account {
+func BalanceLT(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceLTE applies the LTE predicate on the "balance" field.
-func BalanceLTE(v int32) predicate.Account {
+func BalanceLTE(v float64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBalance), v))
 	})
@@ -607,25 +607,25 @@ func HasEntriesWith(preds ...predicate.Entry) predicate.Account {
 	})
 }
 
-// HasOutbound applies the HasEdge predicate on the "outbound" edge.
-func HasOutbound() predicate.Account {
+// HasOutbounds applies the HasEdge predicate on the "outbounds" edge.
+func HasOutbounds() predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OutboundTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OutboundTable, OutboundColumn),
+			sqlgraph.To(OutboundsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OutboundsTable, OutboundsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOutboundWith applies the HasEdge predicate on the "outbound" edge with a given conditions (other predicates).
-func HasOutboundWith(preds ...predicate.Transfer) predicate.Account {
+// HasOutboundsWith applies the HasEdge predicate on the "outbounds" edge with a given conditions (other predicates).
+func HasOutboundsWith(preds ...predicate.Transfer) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OutboundInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OutboundTable, OutboundColumn),
+			sqlgraph.To(OutboundsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OutboundsTable, OutboundsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -635,25 +635,53 @@ func HasOutboundWith(preds ...predicate.Transfer) predicate.Account {
 	})
 }
 
-// HasInbound applies the HasEdge predicate on the "inbound" edge.
-func HasInbound() predicate.Account {
+// HasInbounds applies the HasEdge predicate on the "inbounds" edge.
+func HasInbounds() predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InboundTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, InboundTable, InboundColumn),
+			sqlgraph.To(InboundsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InboundsTable, InboundsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasInboundWith applies the HasEdge predicate on the "inbound" edge with a given conditions (other predicates).
-func HasInboundWith(preds ...predicate.Transfer) predicate.Account {
+// HasInboundsWith applies the HasEdge predicate on the "inbounds" edge with a given conditions (other predicates).
+func HasInboundsWith(preds ...predicate.Transfer) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InboundInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, InboundTable, InboundColumn),
+			sqlgraph.To(InboundsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InboundsTable, InboundsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserTable, UserFieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserInverseTable, UserFieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -23,11 +23,12 @@ type Entry struct {
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Amount holds the value of the "amount" field.
-	Amount int32 `json:"amount,omitempty"`
+	Amount float64 `json:"amount,omitempty"`
+	// AccountId holds the value of the "accountId" field.
+	AccountId uuid.UUID `json:"accountId,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EntryQuery when eager-loading is set.
-	Edges           EntryEdges `json:"edges"`
-	account_entries *uuid.UUID
+	Edges EntryEdges `json:"edges"`
 }
 
 // EntryEdges holds the relations/edges for other nodes in the graph.
@@ -59,12 +60,10 @@ func (*Entry) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case entry.FieldAmount:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(sql.NullFloat64)
 		case entry.FieldCreateTime, entry.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
-		case entry.FieldID:
-			values[i] = new(uuid.UUID)
-		case entry.ForeignKeys[0]: // account_entries
+		case entry.FieldID, entry.FieldAccountId:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Entry", columns[i])
@@ -100,16 +99,16 @@ func (e *Entry) assignValues(columns []string, values []interface{}) error {
 				e.UpdateTime = value.Time
 			}
 		case entry.FieldAmount:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field amount", values[i])
 			} else if value.Valid {
-				e.Amount = int32(value.Int64)
+				e.Amount = value.Float64
 			}
-		case entry.ForeignKeys[0]:
+		case entry.FieldAccountId:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field account_entries", values[i])
+				return fmt.Errorf("unexpected type %T for field accountId", values[i])
 			} else if value != nil {
-				e.account_entries = value
+				e.AccountId = *value
 			}
 		}
 	}
@@ -150,6 +149,8 @@ func (e *Entry) String() string {
 	builder.WriteString(e.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", amount=")
 	builder.WriteString(fmt.Sprintf("%v", e.Amount))
+	builder.WriteString(", accountId=")
+	builder.WriteString(fmt.Sprintf("%v", e.AccountId))
 	builder.WriteByte(')')
 	return builder.String()
 }

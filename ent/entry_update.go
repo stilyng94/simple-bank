@@ -30,15 +30,15 @@ func (eu *EntryUpdate) Where(ps ...predicate.Entry) *EntryUpdate {
 }
 
 // SetAmount sets the "amount" field.
-func (eu *EntryUpdate) SetAmount(i int32) *EntryUpdate {
+func (eu *EntryUpdate) SetAmount(f float64) *EntryUpdate {
 	eu.mutation.ResetAmount()
-	eu.mutation.SetAmount(i)
+	eu.mutation.SetAmount(f)
 	return eu
 }
 
-// AddAmount adds i to the "amount" field.
-func (eu *EntryUpdate) AddAmount(i int32) *EntryUpdate {
-	eu.mutation.AddAmount(i)
+// AddAmount adds f to the "amount" field.
+func (eu *EntryUpdate) AddAmount(f float64) *EntryUpdate {
+	eu.mutation.AddAmount(f)
 	return eu
 }
 
@@ -165,14 +165,14 @@ func (eu *EntryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := eu.mutation.Amount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: entry.FieldAmount,
 		})
 	}
 	if value, ok := eu.mutation.AddedAmount(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: entry.FieldAmount,
 		})
@@ -232,15 +232,15 @@ type EntryUpdateOne struct {
 }
 
 // SetAmount sets the "amount" field.
-func (euo *EntryUpdateOne) SetAmount(i int32) *EntryUpdateOne {
+func (euo *EntryUpdateOne) SetAmount(f float64) *EntryUpdateOne {
 	euo.mutation.ResetAmount()
-	euo.mutation.SetAmount(i)
+	euo.mutation.SetAmount(f)
 	return euo
 }
 
-// AddAmount adds i to the "amount" field.
-func (euo *EntryUpdateOne) AddAmount(i int32) *EntryUpdateOne {
-	euo.mutation.AddAmount(i)
+// AddAmount adds f to the "amount" field.
+func (euo *EntryUpdateOne) AddAmount(f float64) *EntryUpdateOne {
+	euo.mutation.AddAmount(f)
 	return euo
 }
 
@@ -391,14 +391,14 @@ func (euo *EntryUpdateOne) sqlSave(ctx context.Context) (_node *Entry, err error
 	}
 	if value, ok := euo.mutation.Amount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: entry.FieldAmount,
 		})
 	}
 	if value, ok := euo.mutation.AddedAmount(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: entry.FieldAmount,
 		})

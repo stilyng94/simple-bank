@@ -30,15 +30,15 @@ func (tu *TransferUpdate) Where(ps ...predicate.Transfer) *TransferUpdate {
 }
 
 // SetAmount sets the "amount" field.
-func (tu *TransferUpdate) SetAmount(i int32) *TransferUpdate {
+func (tu *TransferUpdate) SetAmount(f float64) *TransferUpdate {
 	tu.mutation.ResetAmount()
-	tu.mutation.SetAmount(i)
+	tu.mutation.SetAmount(f)
 	return tu
 }
 
-// AddAmount adds i to the "amount" field.
-func (tu *TransferUpdate) AddAmount(i int32) *TransferUpdate {
-	tu.mutation.AddAmount(i)
+// AddAmount adds f to the "amount" field.
+func (tu *TransferUpdate) AddAmount(f float64) *TransferUpdate {
+	tu.mutation.AddAmount(f)
 	return tu
 }
 
@@ -185,14 +185,14 @@ func (tu *TransferUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.Amount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: transfer.FieldAmount,
 		})
 	}
 	if value, ok := tu.mutation.AddedAmount(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: transfer.FieldAmount,
 		})
@@ -287,15 +287,15 @@ type TransferUpdateOne struct {
 }
 
 // SetAmount sets the "amount" field.
-func (tuo *TransferUpdateOne) SetAmount(i int32) *TransferUpdateOne {
+func (tuo *TransferUpdateOne) SetAmount(f float64) *TransferUpdateOne {
 	tuo.mutation.ResetAmount()
-	tuo.mutation.SetAmount(i)
+	tuo.mutation.SetAmount(f)
 	return tuo
 }
 
-// AddAmount adds i to the "amount" field.
-func (tuo *TransferUpdateOne) AddAmount(i int32) *TransferUpdateOne {
-	tuo.mutation.AddAmount(i)
+// AddAmount adds f to the "amount" field.
+func (tuo *TransferUpdateOne) AddAmount(f float64) *TransferUpdateOne {
+	tuo.mutation.AddAmount(f)
 	return tuo
 }
 
@@ -466,14 +466,14 @@ func (tuo *TransferUpdateOne) sqlSave(ctx context.Context) (_node *Transfer, err
 	}
 	if value, ok := tuo.mutation.Amount(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: transfer.FieldAmount,
 		})
 	}
 	if value, ok := tuo.mutation.AddedAmount(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: transfer.FieldAmount,
 		})

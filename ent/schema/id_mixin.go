@@ -14,5 +14,5 @@ type IDMixin struct {
 }
 
 func (IDMixin) Fields() []ent.Field {
-	return []ent.Field{field.UUID("id", uuid.UUID{}).Unique().Immutable().Default(uuid.New)}
+	return []ent.Field{field.UUID("id", uuid.UUID{}).Immutable().Default(uuid.New)}
 }

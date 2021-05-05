@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
+	"github.com/google/uuid"
 )
 
 // Transfer holds the schema definition for the Transfer entity.
@@ -15,9 +16,9 @@ type Transfer struct {
 // Fields of the Transfer.
 func (Transfer) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int32("amount"),
-		// field.UUID("from_account_id", uuid.UUID{}).Immutable().Unique(),
-		// field.UUID("to_account_id", uuid.UUID{}).Immutable().Unique(),
+		field.Float("amount"),
+		field.UUID("fromAccountId", uuid.UUID{}).Immutable(),
+		field.UUID("toAccountId", uuid.UUID{}).Immutable(),
 	}
 }
 func (Transfer) Mixin() []ent.Mixin {
@@ -27,7 +28,7 @@ func (Transfer) Mixin() []ent.Mixin {
 // Edges of the Transfer.
 func (Transfer) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("fromAccount", Account.Type).Ref("outbound").Unique().Required(),
-		edge.From("toAccount", Account.Type).Ref("inbound").Unique().Required(),
+		edge.From("fromAccount", Account.Type).Ref("outbounds").Unique().Required().Field("fromAccountId"),
+		edge.From("toAccount", Account.Type).Ref("inbounds").Unique().Required().Field("toAccountId"),
 	}
 }

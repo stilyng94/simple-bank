@@ -1,4 +1,4 @@
-package tests
+package test
 
 import (
 	"context"
@@ -17,14 +17,14 @@ func createFakeTransfer(ctx context.Context, iTransferRepo repository.ITransferR
 func TestCreateTransfer(t *testing.T) {
 	ctx := context.Background()
 
-	account1, _ := createFakeAccount(ctx)
-	account2, _ := createFakeAccount(ctx)
+	account1, _ := createFakeAccountWithFakeUser(ctx)
+	account2, _ := createFakeAccountWithFakeUser(ctx)
 
 	t.Log(">> before: ", account1.Balance, account2.Balance)
 
 	//run a concurrent transfer transcations
 	n := 5
-	amount := int32(10)
+	amount := float64(10)
 
 	errChan := make(chan error)
 	resultChan := make(chan repository.CreateTransferResultDto)
@@ -101,7 +101,7 @@ func TestCreateTransfer(t *testing.T) {
 		diff2 := toAccount.Balance - account2.Balance
 		require.Equal(t, diff1, diff2)
 		require.True(t, diff1 > 0)
-		require.True(t, diff1%amount == 0)
+		require.True(t, int(diff1)%int(amount) == 0.0)
 
 		k := int(diff1 / amount)
 		require.True(t, k >= 1 && k <= n)
@@ -118,37 +118,37 @@ func TestCreateTransfer(t *testing.T) {
 
 	fmt.Println(">> after: ", updateAccount1.Balance, updateAccount2.Balance)
 
-	require.Equal(t, account1.Balance-int32(n)*amount, updateAccount1.Balance)
-	require.Equal(t, account2.Balance+int32(n)*amount, updateAccount2.Balance)
+	require.Equal(t, account1.Balance-float64(n)*amount, updateAccount1.Balance)
+	require.Equal(t, account2.Balance+float64(n)*amount, updateAccount2.Balance)
 }
 
 func TestCreateTransferDeadlock(t *testing.T) {
 	ctx := context.Background()
 
-	account1, _ := createFakeAccount(ctx)
-	account2, _ := createFakeAccount(ctx)
+	account1, _ := createFakeAccountWithFakeUser(ctx)
+	account2, _ := createFakeAccountWithFakeUser(ctx)
 
 	t.Log(">> before: ", account1.Balance, account2.Balance)
 
 	//run a concurrent transfer transcations
 	n := 6
-	amount := int32(10)
+	amount := float64(10)
 
 	errChan := make(chan error)
 
 	for i := 0; i < n; i++ {
-		fromAccountID := account1.ID.String()
-		toAccountID := account2.ID.String()
+		fromAccountID := account1.ID
+		toAccountID := account2.ID
 
 		if i%2 == 1 {
-			fromAccountID = account2.ID.String()
-			toAccountID = account1.ID.String()
+			fromAccountID = account2.ID
+			toAccountID = account1.ID
 		}
 
 		go func() {
 			ctx2 := context.Background()
 			transferRepo := repository.NewTransferRepo(testDb)
-			_, err := createFakeTransfer(ctx2, transferRepo, repository.CreateTransferDto{FromAccountID: fromAccountID, ToAccountID: toAccountID, Amount: amount})
+			_, err := createFakeTransfer(ctx2, transferRepo, repository.CreateTransferDto{FromAccountID: fromAccountID.String(), ToAccountID: toAccountID.String(), Amount: amount})
 
 			errChan <- err
 		}()

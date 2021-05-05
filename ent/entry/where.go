@@ -109,9 +109,16 @@ func UpdateTime(v time.Time) predicate.Entry {
 }
 
 // Amount applies equality check predicate on the "amount" field. It's identical to AmountEQ.
-func Amount(v int32) predicate.Entry {
+func Amount(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAmount), v))
+	})
+}
+
+// AccountId applies equality check predicate on the "accountId" field. It's identical to AccountIdEQ.
+func AccountId(v uuid.UUID) predicate.Entry {
+	return predicate.Entry(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAccountId), v))
 	})
 }
 
@@ -268,21 +275,21 @@ func UpdateTimeLTE(v time.Time) predicate.Entry {
 }
 
 // AmountEQ applies the EQ predicate on the "amount" field.
-func AmountEQ(v int32) predicate.Entry {
+func AmountEQ(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAmount), v))
 	})
 }
 
 // AmountNEQ applies the NEQ predicate on the "amount" field.
-func AmountNEQ(v int32) predicate.Entry {
+func AmountNEQ(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldAmount), v))
 	})
 }
 
 // AmountIn applies the In predicate on the "amount" field.
-func AmountIn(vs ...int32) predicate.Entry {
+func AmountIn(vs ...float64) predicate.Entry {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -299,7 +306,7 @@ func AmountIn(vs ...int32) predicate.Entry {
 }
 
 // AmountNotIn applies the NotIn predicate on the "amount" field.
-func AmountNotIn(vs ...int32) predicate.Entry {
+func AmountNotIn(vs ...float64) predicate.Entry {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -316,30 +323,78 @@ func AmountNotIn(vs ...int32) predicate.Entry {
 }
 
 // AmountGT applies the GT predicate on the "amount" field.
-func AmountGT(v int32) predicate.Entry {
+func AmountGT(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldAmount), v))
 	})
 }
 
 // AmountGTE applies the GTE predicate on the "amount" field.
-func AmountGTE(v int32) predicate.Entry {
+func AmountGTE(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldAmount), v))
 	})
 }
 
 // AmountLT applies the LT predicate on the "amount" field.
-func AmountLT(v int32) predicate.Entry {
+func AmountLT(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldAmount), v))
 	})
 }
 
 // AmountLTE applies the LTE predicate on the "amount" field.
-func AmountLTE(v int32) predicate.Entry {
+func AmountLTE(v float64) predicate.Entry {
 	return predicate.Entry(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldAmount), v))
+	})
+}
+
+// AccountIdEQ applies the EQ predicate on the "accountId" field.
+func AccountIdEQ(v uuid.UUID) predicate.Entry {
+	return predicate.Entry(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAccountId), v))
+	})
+}
+
+// AccountIdNEQ applies the NEQ predicate on the "accountId" field.
+func AccountIdNEQ(v uuid.UUID) predicate.Entry {
+	return predicate.Entry(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAccountId), v))
+	})
+}
+
+// AccountIdIn applies the In predicate on the "accountId" field.
+func AccountIdIn(vs ...uuid.UUID) predicate.Entry {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Entry(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAccountId), v...))
+	})
+}
+
+// AccountIdNotIn applies the NotIn predicate on the "accountId" field.
+func AccountIdNotIn(vs ...uuid.UUID) predicate.Entry {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Entry(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAccountId), v...))
 	})
 }
 

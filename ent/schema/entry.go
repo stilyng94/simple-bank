@@ -5,6 +5,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
+	"github.com/google/uuid"
 )
 
 // Entry holds the schema definition for the Entry entity.
@@ -15,8 +16,8 @@ type Entry struct {
 // Fields of the Entry.
 func (Entry) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int32("amount"),
-		// field.UUID("account_id", uuid.UUID{}).Immutable().Unique(),
+		field.Float("amount"),
+		field.UUID("accountId", uuid.UUID{}).Immutable(),
 	}
 
 }
@@ -27,5 +28,5 @@ func (Entry) Mixin() []ent.Mixin {
 
 // Edges of the Entry.
 func (Entry) Edges() []ent.Edge {
-	return []ent.Edge{edge.From("account", Account.Type).Ref("entries").Unique().Required()}
+	return []ent.Edge{edge.From("account", Account.Type).Ref("entries").Unique().Required().Field("accountId")}
 }

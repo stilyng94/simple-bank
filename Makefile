@@ -14,7 +14,7 @@ entgen:
 	go generate ./ent
 
 test:
-	go test -test.v -cover ./tests/...
+	go test ./test/... -test.v -cover
 
 describeSchema:
 	go run entgo.io/ent/cmd/ent describe ./ent/schema
@@ -22,7 +22,7 @@ describeSchema:
 server:
 	go run main.go
 
-mock:
-	mockgen -package mockdb  -destination tests/mock/store.go  simple-bank/repository IAccountRepo,ITransferRepo	
+commit:
+	git add . && git commit -m "$t" -m "$b" && git push origin ${branch} && git pull origin ${branch}
 
-.PHONY: test postgres createDb dropdb createEntity entgen describeSchema server mock
+.PHONY: test postgres createDb dropdb createEntity entgen describeSchema server commit

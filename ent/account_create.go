@@ -9,6 +9,7 @@ import (
 	"simple-bank/ent/account"
 	"simple-bank/ent/entry"
 	"simple-bank/ent/transfer"
+	"simple-bank/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -58,15 +59,15 @@ func (ac *AccountCreate) SetOwner(s string) *AccountCreate {
 }
 
 // SetBalance sets the "balance" field.
-func (ac *AccountCreate) SetBalance(i int32) *AccountCreate {
-	ac.mutation.SetBalance(i)
+func (ac *AccountCreate) SetBalance(f float64) *AccountCreate {
+	ac.mutation.SetBalance(f)
 	return ac
 }
 
 // SetNillableBalance sets the "balance" field if the given value is not nil.
-func (ac *AccountCreate) SetNillableBalance(i *int32) *AccountCreate {
-	if i != nil {
-		ac.SetBalance(*i)
+func (ac *AccountCreate) SetNillableBalance(f *float64) *AccountCreate {
+	if f != nil {
+		ac.SetBalance(*f)
 	}
 	return ac
 }
@@ -98,14 +99,14 @@ func (ac *AccountCreate) AddEntries(e ...*Entry) *AccountCreate {
 	return ac.AddEntryIDs(ids...)
 }
 
-// AddOutboundIDs adds the "outbound" edge to the Transfer entity by IDs.
+// AddOutboundIDs adds the "outbounds" edge to the Transfer entity by IDs.
 func (ac *AccountCreate) AddOutboundIDs(ids ...uuid.UUID) *AccountCreate {
 	ac.mutation.AddOutboundIDs(ids...)
 	return ac
 }
 
-// AddOutbound adds the "outbound" edges to the Transfer entity.
-func (ac *AccountCreate) AddOutbound(t ...*Transfer) *AccountCreate {
+// AddOutbounds adds the "outbounds" edges to the Transfer entity.
+func (ac *AccountCreate) AddOutbounds(t ...*Transfer) *AccountCreate {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -113,19 +114,30 @@ func (ac *AccountCreate) AddOutbound(t ...*Transfer) *AccountCreate {
 	return ac.AddOutboundIDs(ids...)
 }
 
-// AddInboundIDs adds the "inbound" edge to the Transfer entity by IDs.
+// AddInboundIDs adds the "inbounds" edge to the Transfer entity by IDs.
 func (ac *AccountCreate) AddInboundIDs(ids ...uuid.UUID) *AccountCreate {
 	ac.mutation.AddInboundIDs(ids...)
 	return ac
 }
 
-// AddInbound adds the "inbound" edges to the Transfer entity.
-func (ac *AccountCreate) AddInbound(t ...*Transfer) *AccountCreate {
+// AddInbounds adds the "inbounds" edges to the Transfer entity.
+func (ac *AccountCreate) AddInbounds(t ...*Transfer) *AccountCreate {
 	ids := make([]uuid.UUID, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return ac.AddInboundIDs(ids...)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (ac *AccountCreate) SetUserID(id string) *AccountCreate {
+	ac.mutation.SetUserID(id)
+	return ac
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (ac *AccountCreate) SetUser(u *User) *AccountCreate {
+	return ac.SetUserID(u.ID)
 }
 
 // Mutation returns the AccountMutation object of the builder.
@@ -225,6 +237,9 @@ func (ac *AccountCreate) check() error {
 			return &ValidationError{Name: "currency", err: fmt.Errorf("ent: validator failed for field \"currency\": %w", err)}
 		}
 	}
+	if _, ok := ac.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New("ent: missing required edge \"user\"")}
+	}
 	return nil
 }
 
@@ -270,17 +285,9 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		})
 		_node.UpdateTime = value
 	}
-	if value, ok := ac.mutation.Owner(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: account.FieldOwner,
-		})
-		_node.Owner = value
-	}
 	if value, ok := ac.mutation.Balance(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt32,
+			Type:   field.TypeFloat64,
 			Value:  value,
 			Column: account.FieldBalance,
 		})
@@ -313,12 +320,12 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ac.mutation.OutboundIDs(); len(nodes) > 0 {
+	if nodes := ac.mutation.OutboundsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.OutboundTable,
-			Columns: []string{account.OutboundColumn},
+			Table:   account.OutboundsTable,
+			Columns: []string{account.OutboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -332,12 +339,12 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ac.mutation.InboundIDs(); len(nodes) > 0 {
+	if nodes := ac.mutation.InboundsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   account.InboundTable,
-			Columns: []string{account.InboundColumn},
+			Table:   account.InboundsTable,
+			Columns: []string{account.InboundsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -349,6 +356,26 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   account.UserTable,
+			Columns: []string{account.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.Owner = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

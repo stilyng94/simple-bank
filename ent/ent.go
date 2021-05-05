@@ -8,6 +8,7 @@ import (
 	"simple-bank/ent/account"
 	"simple-bank/ent/entry"
 	"simple-bank/ent/transfer"
+	"simple-bank/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -36,6 +37,7 @@ func columnChecker(table string) func(string) error {
 		account.Table:  account.ValidColumn,
 		entry.Table:    entry.ValidColumn,
 		transfer.Table: transfer.ValidColumn,
+		user.Table:     user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

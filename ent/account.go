@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"simple-bank/ent/account"
+	"simple-bank/ent/user"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ type Account struct {
 	// Owner holds the value of the "owner" field.
 	Owner string `json:"owner,omitempty"`
 	// Balance holds the value of the "balance" field.
-	Balance int32 `json:"balance,omitempty"`
+	Balance float64 `json:"balance,omitempty"`
 	// Currency holds the value of the "currency" field.
 	Currency string `json:"currency,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -36,13 +37,15 @@ type Account struct {
 type AccountEdges struct {
 	// Entries holds the value of the entries edge.
 	Entries []*Entry `json:"entries,omitempty"`
-	// Outbound holds the value of the outbound edge.
-	Outbound []*Transfer `json:"outbound,omitempty"`
-	// Inbound holds the value of the inbound edge.
-	Inbound []*Transfer `json:"inbound,omitempty"`
+	// Outbounds holds the value of the outbounds edge.
+	Outbounds []*Transfer `json:"outbounds,omitempty"`
+	// Inbounds holds the value of the inbounds edge.
+	Inbounds []*Transfer `json:"inbounds,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // EntriesOrErr returns the Entries value or an error if the edge
@@ -54,22 +57,36 @@ func (e AccountEdges) EntriesOrErr() ([]*Entry, error) {
 	return nil, &NotLoadedError{edge: "entries"}
 }
 
-// OutboundOrErr returns the Outbound value or an error if the edge
+// OutboundsOrErr returns the Outbounds value or an error if the edge
 // was not loaded in eager-loading.
-func (e AccountEdges) OutboundOrErr() ([]*Transfer, error) {
+func (e AccountEdges) OutboundsOrErr() ([]*Transfer, error) {
 	if e.loadedTypes[1] {
-		return e.Outbound, nil
+		return e.Outbounds, nil
 	}
-	return nil, &NotLoadedError{edge: "outbound"}
+	return nil, &NotLoadedError{edge: "outbounds"}
 }
 
-// InboundOrErr returns the Inbound value or an error if the edge
+// InboundsOrErr returns the Inbounds value or an error if the edge
 // was not loaded in eager-loading.
-func (e AccountEdges) InboundOrErr() ([]*Transfer, error) {
+func (e AccountEdges) InboundsOrErr() ([]*Transfer, error) {
 	if e.loadedTypes[2] {
-		return e.Inbound, nil
+		return e.Inbounds, nil
 	}
-	return nil, &NotLoadedError{edge: "inbound"}
+	return nil, &NotLoadedError{edge: "inbounds"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AccountEdges) UserOrErr() (*User, error) {
+	if e.loadedTypes[3] {
+		if e.User == nil {
+			// The edge user was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.User, nil
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -78,7 +95,7 @@ func (*Account) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case account.FieldBalance:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(sql.NullFloat64)
 		case account.FieldOwner, account.FieldCurrency:
 			values[i] = new(sql.NullString)
 		case account.FieldCreateTime, account.FieldUpdateTime:
@@ -125,10 +142,10 @@ func (a *Account) assignValues(columns []string, values []interface{}) error {
 				a.Owner = value.String
 			}
 		case account.FieldBalance:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field balance", values[i])
 			} else if value.Valid {
-				a.Balance = int32(value.Int64)
+				a.Balance = value.Float64
 			}
 		case account.FieldCurrency:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -146,14 +163,19 @@ func (a *Account) QueryEntries() *EntryQuery {
 	return (&AccountClient{config: a.config}).QueryEntries(a)
 }
 
-// QueryOutbound queries the "outbound" edge of the Account entity.
-func (a *Account) QueryOutbound() *TransferQuery {
-	return (&AccountClient{config: a.config}).QueryOutbound(a)
+// QueryOutbounds queries the "outbounds" edge of the Account entity.
+func (a *Account) QueryOutbounds() *TransferQuery {
+	return (&AccountClient{config: a.config}).QueryOutbounds(a)
 }
 
-// QueryInbound queries the "inbound" edge of the Account entity.
-func (a *Account) QueryInbound() *TransferQuery {
-	return (&AccountClient{config: a.config}).QueryInbound(a)
+// QueryInbounds queries the "inbounds" edge of the Account entity.
+func (a *Account) QueryInbounds() *TransferQuery {
+	return (&AccountClient{config: a.config}).QueryInbounds(a)
+}
+
+// QueryUser queries the "user" edge of the Account entity.
+func (a *Account) QueryUser() *UserQuery {
+	return (&AccountClient{config: a.config}).QueryUser(a)
 }
 
 // Update returns a builder for updating this Account.

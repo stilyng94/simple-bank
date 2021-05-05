@@ -25,10 +25,14 @@ const (
 	FieldCurrency = "currency"
 	// EdgeEntries holds the string denoting the entries edge name in mutations.
 	EdgeEntries = "entries"
-	// EdgeOutbound holds the string denoting the outbound edge name in mutations.
-	EdgeOutbound = "outbound"
-	// EdgeInbound holds the string denoting the inbound edge name in mutations.
-	EdgeInbound = "inbound"
+	// EdgeOutbounds holds the string denoting the outbounds edge name in mutations.
+	EdgeOutbounds = "outbounds"
+	// EdgeInbounds holds the string denoting the inbounds edge name in mutations.
+	EdgeInbounds = "inbounds"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
+	// UserFieldID holds the string denoting the ID field of the User.
+	UserFieldID = "username"
 	// Table holds the table name of the account in the database.
 	Table = "accounts"
 	// EntriesTable is the table the holds the entries relation/edge.
@@ -37,21 +41,28 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "entry" package.
 	EntriesInverseTable = "entries"
 	// EntriesColumn is the table column denoting the entries relation/edge.
-	EntriesColumn = "account_entries"
-	// OutboundTable is the table the holds the outbound relation/edge.
-	OutboundTable = "transfers"
-	// OutboundInverseTable is the table name for the Transfer entity.
+	EntriesColumn = "account_id"
+	// OutboundsTable is the table the holds the outbounds relation/edge.
+	OutboundsTable = "transfers"
+	// OutboundsInverseTable is the table name for the Transfer entity.
 	// It exists in this package in order to avoid circular dependency with the "transfer" package.
-	OutboundInverseTable = "transfers"
-	// OutboundColumn is the table column denoting the outbound relation/edge.
-	OutboundColumn = "account_outbound"
-	// InboundTable is the table the holds the inbound relation/edge.
-	InboundTable = "transfers"
-	// InboundInverseTable is the table name for the Transfer entity.
+	OutboundsInverseTable = "transfers"
+	// OutboundsColumn is the table column denoting the outbounds relation/edge.
+	OutboundsColumn = "from_account_id"
+	// InboundsTable is the table the holds the inbounds relation/edge.
+	InboundsTable = "transfers"
+	// InboundsInverseTable is the table name for the Transfer entity.
 	// It exists in this package in order to avoid circular dependency with the "transfer" package.
-	InboundInverseTable = "transfers"
-	// InboundColumn is the table column denoting the inbound relation/edge.
-	InboundColumn = "account_inbound"
+	InboundsInverseTable = "transfers"
+	// InboundsColumn is the table column denoting the inbounds relation/edge.
+	InboundsColumn = "to_account_id"
+	// UserTable is the table the holds the user relation/edge.
+	UserTable = "accounts"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "owner"
 )
 
 // Columns holds all SQL columns for account fields.
@@ -84,7 +95,7 @@ var (
 	// OwnerValidator is a validator for the "owner" field. It is called by the builders before save.
 	OwnerValidator func(string) error
 	// DefaultBalance holds the default value on creation for the "balance" field.
-	DefaultBalance int32
+	DefaultBalance float64
 	// CurrencyValidator is a validator for the "currency" field. It is called by the builders before save.
 	CurrencyValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.

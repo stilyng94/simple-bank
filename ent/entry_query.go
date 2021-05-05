@@ -28,7 +28,6 @@ type EntryQuery struct {
 	predicates []predicate.Entry
 	// eager-loading edges.
 	withAccount *AccountQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -350,18 +349,11 @@ func (eq *EntryQuery) prepareQuery(ctx context.Context) error {
 func (eq *EntryQuery) sqlAll(ctx context.Context) ([]*Entry, error) {
 	var (
 		nodes       = []*Entry{}
-		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
 		loadedTypes = [1]bool{
 			eq.withAccount != nil,
 		}
 	)
-	if eq.withAccount != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, entry.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Entry{config: eq.config}
 		nodes = append(nodes, node)
@@ -386,10 +378,7 @@ func (eq *EntryQuery) sqlAll(ctx context.Context) ([]*Entry, error) {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Entry)
 		for i := range nodes {
-			if nodes[i].account_entries == nil {
-				continue
-			}
-			fk := *nodes[i].account_entries
+			fk := nodes[i].AccountId
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
@@ -403,7 +392,7 @@ func (eq *EntryQuery) sqlAll(ctx context.Context) ([]*Entry, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "account_entries" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "accountId" returned %v`, n.ID)
 			}
 			for i := range nodes {
 				nodes[i].Edges.Account = n

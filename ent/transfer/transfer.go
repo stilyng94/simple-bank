@@ -19,6 +19,10 @@ const (
 	FieldUpdateTime = "update_time"
 	// FieldAmount holds the string denoting the amount field in the database.
 	FieldAmount = "amount"
+	// FieldFromAccountId holds the string denoting the fromaccountid field in the database.
+	FieldFromAccountId = "from_account_id"
+	// FieldToAccountId holds the string denoting the toaccountid field in the database.
+	FieldToAccountId = "to_account_id"
 	// EdgeFromAccount holds the string denoting the fromaccount edge name in mutations.
 	EdgeFromAccount = "fromAccount"
 	// EdgeToAccount holds the string denoting the toaccount edge name in mutations.
@@ -31,14 +35,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "account" package.
 	FromAccountInverseTable = "accounts"
 	// FromAccountColumn is the table column denoting the fromAccount relation/edge.
-	FromAccountColumn = "account_outbound"
+	FromAccountColumn = "from_account_id"
 	// ToAccountTable is the table the holds the toAccount relation/edge.
 	ToAccountTable = "transfers"
 	// ToAccountInverseTable is the table name for the Account entity.
 	// It exists in this package in order to avoid circular dependency with the "account" package.
 	ToAccountInverseTable = "accounts"
 	// ToAccountColumn is the table column denoting the toAccount relation/edge.
-	ToAccountColumn = "account_inbound"
+	ToAccountColumn = "to_account_id"
 )
 
 // Columns holds all SQL columns for transfer fields.
@@ -47,24 +51,14 @@ var Columns = []string{
 	FieldCreateTime,
 	FieldUpdateTime,
 	FieldAmount,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "transfers"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"account_outbound",
-	"account_inbound",
+	FieldFromAccountId,
+	FieldToAccountId,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

@@ -109,9 +109,23 @@ func UpdateTime(v time.Time) predicate.Transfer {
 }
 
 // Amount applies equality check predicate on the "amount" field. It's identical to AmountEQ.
-func Amount(v int32) predicate.Transfer {
+func Amount(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAmount), v))
+	})
+}
+
+// FromAccountId applies equality check predicate on the "fromAccountId" field. It's identical to FromAccountIdEQ.
+func FromAccountId(v uuid.UUID) predicate.Transfer {
+	return predicate.Transfer(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFromAccountId), v))
+	})
+}
+
+// ToAccountId applies equality check predicate on the "toAccountId" field. It's identical to ToAccountIdEQ.
+func ToAccountId(v uuid.UUID) predicate.Transfer {
+	return predicate.Transfer(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldToAccountId), v))
 	})
 }
 
@@ -268,21 +282,21 @@ func UpdateTimeLTE(v time.Time) predicate.Transfer {
 }
 
 // AmountEQ applies the EQ predicate on the "amount" field.
-func AmountEQ(v int32) predicate.Transfer {
+func AmountEQ(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAmount), v))
 	})
 }
 
 // AmountNEQ applies the NEQ predicate on the "amount" field.
-func AmountNEQ(v int32) predicate.Transfer {
+func AmountNEQ(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldAmount), v))
 	})
 }
 
 // AmountIn applies the In predicate on the "amount" field.
-func AmountIn(vs ...int32) predicate.Transfer {
+func AmountIn(vs ...float64) predicate.Transfer {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -299,7 +313,7 @@ func AmountIn(vs ...int32) predicate.Transfer {
 }
 
 // AmountNotIn applies the NotIn predicate on the "amount" field.
-func AmountNotIn(vs ...int32) predicate.Transfer {
+func AmountNotIn(vs ...float64) predicate.Transfer {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -316,30 +330,126 @@ func AmountNotIn(vs ...int32) predicate.Transfer {
 }
 
 // AmountGT applies the GT predicate on the "amount" field.
-func AmountGT(v int32) predicate.Transfer {
+func AmountGT(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldAmount), v))
 	})
 }
 
 // AmountGTE applies the GTE predicate on the "amount" field.
-func AmountGTE(v int32) predicate.Transfer {
+func AmountGTE(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldAmount), v))
 	})
 }
 
 // AmountLT applies the LT predicate on the "amount" field.
-func AmountLT(v int32) predicate.Transfer {
+func AmountLT(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldAmount), v))
 	})
 }
 
 // AmountLTE applies the LTE predicate on the "amount" field.
-func AmountLTE(v int32) predicate.Transfer {
+func AmountLTE(v float64) predicate.Transfer {
 	return predicate.Transfer(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldAmount), v))
+	})
+}
+
+// FromAccountIdEQ applies the EQ predicate on the "fromAccountId" field.
+func FromAccountIdEQ(v uuid.UUID) predicate.Transfer {
+	return predicate.Transfer(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldFromAccountId), v))
+	})
+}
+
+// FromAccountIdNEQ applies the NEQ predicate on the "fromAccountId" field.
+func FromAccountIdNEQ(v uuid.UUID) predicate.Transfer {
+	return predicate.Transfer(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldFromAccountId), v))
+	})
+}
+
+// FromAccountIdIn applies the In predicate on the "fromAccountId" field.
+func FromAccountIdIn(vs ...uuid.UUID) predicate.Transfer {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Transfer(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldFromAccountId), v...))
+	})
+}
+
+// FromAccountIdNotIn applies the NotIn predicate on the "fromAccountId" field.
+func FromAccountIdNotIn(vs ...uuid.UUID) predicate.Transfer {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Transfer(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldFromAccountId), v...))
+	})
+}
+
+// ToAccountIdEQ applies the EQ predicate on the "toAccountId" field.
+func ToAccountIdEQ(v uuid.UUID) predicate.Transfer {
+	return predicate.Transfer(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldToAccountId), v))
+	})
+}
+
+// ToAccountIdNEQ applies the NEQ predicate on the "toAccountId" field.
+func ToAccountIdNEQ(v uuid.UUID) predicate.Transfer {
+	return predicate.Transfer(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldToAccountId), v))
+	})
+}
+
+// ToAccountIdIn applies the In predicate on the "toAccountId" field.
+func ToAccountIdIn(vs ...uuid.UUID) predicate.Transfer {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Transfer(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldToAccountId), v...))
+	})
+}
+
+// ToAccountIdNotIn applies the NotIn predicate on the "toAccountId" field.
+func ToAccountIdNotIn(vs ...uuid.UUID) predicate.Transfer {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Transfer(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldToAccountId), v...))
 	})
 }
 

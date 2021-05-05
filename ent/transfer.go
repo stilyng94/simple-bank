@@ -23,12 +23,14 @@ type Transfer struct {
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Amount holds the value of the "amount" field.
-	Amount int32 `json:"amount,omitempty"`
+	Amount float64 `json:"amount,omitempty"`
+	// FromAccountId holds the value of the "fromAccountId" field.
+	FromAccountId uuid.UUID `json:"fromAccountId,omitempty"`
+	// ToAccountId holds the value of the "toAccountId" field.
+	ToAccountId uuid.UUID `json:"toAccountId,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TransferQuery when eager-loading is set.
-	Edges            TransferEdges `json:"edges"`
-	account_outbound *uuid.UUID
-	account_inbound  *uuid.UUID
+	Edges TransferEdges `json:"edges"`
 }
 
 // TransferEdges holds the relations/edges for other nodes in the graph.
@@ -76,14 +78,10 @@ func (*Transfer) scanValues(columns []string) ([]interface{}, error) {
 	for i := range columns {
 		switch columns[i] {
 		case transfer.FieldAmount:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(sql.NullFloat64)
 		case transfer.FieldCreateTime, transfer.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
-		case transfer.FieldID:
-			values[i] = new(uuid.UUID)
-		case transfer.ForeignKeys[0]: // account_outbound
-			values[i] = new(uuid.UUID)
-		case transfer.ForeignKeys[1]: // account_inbound
+		case transfer.FieldID, transfer.FieldFromAccountId, transfer.FieldToAccountId:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Transfer", columns[i])
@@ -119,22 +117,22 @@ func (t *Transfer) assignValues(columns []string, values []interface{}) error {
 				t.UpdateTime = value.Time
 			}
 		case transfer.FieldAmount:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field amount", values[i])
 			} else if value.Valid {
-				t.Amount = int32(value.Int64)
+				t.Amount = value.Float64
 			}
-		case transfer.ForeignKeys[0]:
+		case transfer.FieldFromAccountId:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field account_outbound", values[i])
+				return fmt.Errorf("unexpected type %T for field fromAccountId", values[i])
 			} else if value != nil {
-				t.account_outbound = value
+				t.FromAccountId = *value
 			}
-		case transfer.ForeignKeys[1]:
+		case transfer.FieldToAccountId:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field account_inbound", values[i])
+				return fmt.Errorf("unexpected type %T for field toAccountId", values[i])
 			} else if value != nil {
-				t.account_inbound = value
+				t.ToAccountId = *value
 			}
 		}
 	}
@@ -180,6 +178,10 @@ func (t *Transfer) String() string {
 	builder.WriteString(t.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", amount=")
 	builder.WriteString(fmt.Sprintf("%v", t.Amount))
+	builder.WriteString(", fromAccountId=")
+	builder.WriteString(fmt.Sprintf("%v", t.FromAccountId))
+	builder.WriteString(", toAccountId=")
+	builder.WriteString(fmt.Sprintf("%v", t.ToAccountId))
 	builder.WriteByte(')')
 	return builder.String()
 }

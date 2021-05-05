@@ -1,19 +1,18 @@
-package tests
+package test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"simple-bank/ent"
-	"simple-bank/util"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetAccountApi(t *testing.T) {
-	account := randomAccount()
+	account, err := createFakeAccountWithFakeUser(context.Background())
+	require.NoError(t, err)
 
 	testCases := []struct {
 		name          string
@@ -49,9 +48,4 @@ func TestGetAccountApi(t *testing.T) {
 
 	}
 
-}
-
-func randomAccount() *ent.Account {
-	acc := &ent.Account{ID: uuid.MustParse("e2994ed2-34c0-4d73-8a1c-936e2b6c9685"), Owner: util.RandomOwner(), Balance: util.RandomAmount(), Currency: util.RandomCurrency()}
-	return acc
 }
